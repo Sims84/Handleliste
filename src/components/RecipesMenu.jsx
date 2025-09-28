@@ -33,39 +33,65 @@ export default function RecipesMenu({ onAddIngredients }) {
     }
   };
 
-  return (
-    <section style={{ marginTop: "2rem" }}>
-      <h2>Middager</h2>
+  const handleKeyPress = (e, field) => {
+    if (e.key === 'Enter') {
+      if (field === 'name') {
+        // Focus on ingredients field
+        e.target.parentElement.querySelector('input[placeholder*="Ingredienser"]')?.focus();
+      } else {
+        addRecipe();
+      }
+    }
+  };
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+  return (
+    <section className="recipes-section">
+      <h2>🍽️ Oppskrifter</h2>
+
+      <div className="recipe-form">
         <input
           value={newRecipeName}
           onChange={e => setNewRecipeName(e.target.value)}
+          onKeyPress={e => handleKeyPress(e, 'name')}
           placeholder="Navn på rett"
+          className="recipe-input"
         />
         <input
           value={newRecipeIngredients}
           onChange={e => setNewRecipeIngredients(e.target.value)}
+          onKeyPress={e => handleKeyPress(e, 'ingredients')}
           placeholder="Ingredienser, kommaseparert"
+          className="recipe-input"
         />
-        <button onClick={addRecipe}>Legg til oppskrift</button>
+        <button onClick={addRecipe} className="recipe-button">
+          Legg til oppskrift
+        </button>
       </div>
 
-      <ul>
-        {recipes.map((rec, idx) => (
-          <li key={idx} style={{ marginTop: 12 }}>
-            <strong>{rec.name}</strong>
-            <button onClick={() => useRecipe(rec)} style={{ marginLeft: 8 }}>
-              Legg ingredienser i handlelista
-            </button>
-            <ul>
-              {rec.ingredients.map((ing, j) => (
-                <li key={j}>{ing}</li>
-              ))}
-            </ul>
-          </li>
-        ))}
-      </ul>
+      {recipes.length === 0 ? (
+        <p className="empty-state">Ingen oppskrifter ennå. Legg til din første oppskrift!</p>
+      ) : (
+        <ul className="recipe-list">
+          {recipes.map((rec, idx) => (
+            <li key={idx} className="recipe-item">
+              <div className="recipe-header">
+                <span className="recipe-name">{rec.name}</span>
+                <button 
+                  onClick={() => useRecipe(rec)} 
+                  className="use-recipe-button"
+                >
+                  → Handleliste
+                </button>
+              </div>
+              <ul className="ingredients-list">
+                {rec.ingredients.map((ing, j) => (
+                  <li key={j} className="ingredient-item">{ing}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

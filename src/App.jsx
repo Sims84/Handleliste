@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import RecipesMenu from "./components/RecipesMenu";
+import ShoppingList from "./components/ShoppingList";
+import "./App.css";
 
 function App() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
 
-  // Legg denne inni App-komponenten din:
-const addIngredientsToList = (ingredients) => {
-  const existing = new Set(items.map(i => i.name.toLowerCase()));
-  const toAdd = ingredients
-    .filter(ing => !existing.has(ing.toLowerCase()))
-    .map(ing => ({ name: ing, bought: false }));
-  if (toAdd.length) setItems(prev => [...prev, ...toAdd]);
-};
+  const addIngredientsToList = (ingredients) => {
+    const existing = new Set(items.map(i => i.name.toLowerCase()));
+    const toAdd = ingredients
+      .filter(ing => !existing.has(ing.toLowerCase()))
+      .map(ing => ({ name: ing, bought: false }));
+    if (toAdd.length) setItems(prev => [...prev, ...toAdd]);
+  };
 
 
   // Hent lagrede varer fra localStorage
@@ -41,32 +42,23 @@ const addIngredientsToList = (ingredients) => {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>🛒 Handleliste</h1>
-      <p>App is working! React is loaded successfully.</p>
-      <input
-        value={newItem}
-        onChange={(e) => setNewItem(e.target.value)}
-        placeholder="Legg til vare..."
-      />
-      <button onClick={addItem}>Legg til</button>
-
-      <ul>
-        {items.map((item, i) => (
-          <li
-            key={i}
-            onClick={() => toggleItem(i)}
-            style={{
-              textDecoration: item.bought ? "line-through" : "none",
-              cursor: "pointer",
-            }}
-          >
-            {item.name}
-          </li>
-        ))}
-      </ul>
-
-      <RecipesMenu onAddIngredients={addIngredientsToList} />
+    <div className="app">
+      <header className="app-header">
+        <h1>🛒 Handleliste & Oppskrifter</h1>
+        <p>Planlegg middager og lag handleliste</p>
+      </header>
+      
+      <main className="app-main">
+        <ShoppingList 
+          items={items}
+          newItem={newItem}
+          setNewItem={setNewItem}
+          addItem={addItem}
+          toggleItem={toggleItem}
+        />
+        
+        <RecipesMenu onAddIngredients={addIngredientsToList} />
+      </main>
     </div>
   );
 }
