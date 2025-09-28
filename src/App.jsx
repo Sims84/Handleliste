@@ -1,8 +1,19 @@
 import { useState, useEffect } from "react";
+import RecipesMenu from "./components/RecipesMenu";
 
 function App() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
+
+  // Legg denne inni App-komponenten din:
+const addIngredientsToList = (ingredients) => {
+  const existing = new Set(items.map(i => i.name.toLowerCase()));
+  const toAdd = ingredients
+    .filter(ing => !existing.has(ing.toLowerCase()))
+    .map(ing => ({ name: ing, bought: false }));
+  if (toAdd.length) setItems(prev => [...prev, ...toAdd]);
+};
+
 
   // Hent lagrede varer fra localStorage
   useEffect(() => {
@@ -54,6 +65,8 @@ function App() {
           </li>
         ))}
       </ul>
+
+      <RecipesMenu onAddIngredients={addIngredientsToList} />
     </div>
   );
 }
