@@ -15,6 +15,6 @@ export default defineConfig({
   // om du nokon gong bruker `vite preview`, treng du dette òg:
   preview: {
     host: true,
-    allowedHosts: true,
+    allowedHosts: ["49e1a990-de35-449e-83ef-8211dbfd4327-00-3pidl6cfc3eo3.picard.replit.dev"]
   },
 })
