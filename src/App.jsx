@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import RecipesMenu from "./components/RecipesMenu";
 import ShoppingList from "./components/ShoppingList";
 import "./App.css";
