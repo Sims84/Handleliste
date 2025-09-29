@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import RecipesMenu from "./components/RecipesMenu";
 
 function App() {
@@ -44,6 +44,7 @@ const addIngredientsToList = (ingredients) => {
     <div style={{ padding: "2rem" }}>
       <h1>🛒 Handleliste</h1>
       <p>App is working! React is loaded successfully.</p>
+      <p>Current items count: {items.length}</p>
       <input
         value={newItem}
         onChange={(e) => setNewItem(e.target.value)}
