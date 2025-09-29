@@ -7,6 +7,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Allows external access (required for Replit)
     port: 5000, // Port 5000 is required for Replit
-    strictPort: true
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 })
