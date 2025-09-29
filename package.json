@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-<<<<<<< HEAD
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "cd client && vite --host 0.0.0.0 --port 5000",
     "dev:server": "cd server && tsx --watch index.ts",
@@ -15,13 +14,6 @@
     "preview": "vite preview --host 0.0.0.0 --port 5000",
     "db:push": "drizzle-kit push"
   },
-=======
-      "build": "npm run build:client",
-      "build:client": "cd client && vite build",
-      "preview": "cd client && vite preview",
-      "dev": "cd client && vite"
-    },
->>>>>>> recipes-feature
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
     "@tanstack/react-query": "^5.90.2",
