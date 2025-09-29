@@ -12,8 +12,11 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false
+        changeOrigin: false,
+        secure: false,
+        headers: {
+          'Host': '49e1a990-de35-449e-83ef-8211dbfd4327-00-3pidl6cfc3eo3.picard.replit.dev'
+        }
       }
     }
   }
