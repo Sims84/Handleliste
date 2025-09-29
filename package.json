@@ -10,6 +10,9 @@
     "preview": "vite preview --host 0.0.0.0 --port 5000"
   },
   "dependencies": {
+    "@types/memoizee": "^0.4.12",
+    "memoizee": "^0.4.17",
+    "openid-client": "^6.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
