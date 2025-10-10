@@ -18,33 +18,63 @@ export interface SearchResult {
 
 export async function searchMatprat(query: string): Promise<SearchResult[]> {
   try {
-    const searchUrl = `https://www.matprat.no/api/search?q=${encodeURIComponent(query)}&type=recipe`;
+    const searchUrl = `https://www.matprat.no/sok/?q=${encodeURIComponent(query)}&category=recipes`;
     
     const response = await fetch(searchUrl, {
       headers: {
-        'User-Agent': 'Handleliste App',
-        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html',
       },
     });
 
     if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`);
+      console.error(`Search failed with status: ${response.status}`);
+      return [];
     }
 
-    const data = await response.json();
+    const html = await response.text();
+    const results: SearchResult[] = [];
     
-    if (data.recipes && Array.isArray(data.recipes)) {
-      return data.recipes.map((recipe: any) => ({
-        title: recipe.title || recipe.name,
-        url: recipe.url || `https://www.matprat.no${recipe.path}`,
-        imageUrl: recipe.image || recipe.imageUrl,
-      }));
+    // Extract recipe links from the search results page
+    // Pattern: <a href="/oppskrifter/...">
+    const recipePattern = /<a[^>]+href="(\/oppskrifter\/[^"]+)"[^>]*>[\s\S]*?<h3[^>]*>([^<]+)<\/h3>[\s\S]*?(?:<img[^>]+src="([^"]+)"|)/gi;
+    
+    let match;
+    while ((match = recipePattern.exec(html)) !== null) {
+      const [, path, title, imageUrl] = match;
+      results.push({
+        title: title.trim(),
+        url: `https://www.matprat.no${path}`,
+        imageUrl: imageUrl || undefined,
+      });
+      
+      // Limit to 20 results
+      if (results.length >= 20) break;
     }
 
-    return [];
+    // Fallback: simpler pattern if the above doesn't work
+    if (results.length === 0) {
+      const simplePattern = /href="(\/oppskrifter\/[^"]+)"/g;
+      const titles = html.match(/<h3[^>]*>([^<]+)<\/h3>/g) || [];
+      
+      let i = 0;
+      while ((match = simplePattern.exec(html)) !== null && i < titles.length) {
+        const titleMatch = titles[i].match(/<h3[^>]*>([^<]+)<\/h3>/);
+        if (titleMatch) {
+          results.push({
+            title: titleMatch[1].trim(),
+            url: `https://www.matprat.no${match[1]}`,
+          });
+        }
+        i++;
+        if (results.length >= 20) break;
+      }
+    }
+
+    return results;
   } catch (error) {
     console.error('Matprat search error:', error);
-    throw new Error('Failed to search Matprat');
+    return [];
   }
 }
 
@@ -52,7 +82,7 @@ export async function scrapeRecipe(url: string): Promise<ScrapedRecipe> {
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Handleliste App',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
     });
 
@@ -71,6 +101,7 @@ export async function scrapeRecipe(url: string): Promise<ScrapedRecipe> {
 }
 
 function parseRecipeFromHtml(html: string, url: string): ScrapedRecipe {
+  // Try to extract JSON-LD structured data first
   const jsonLdMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/i);
   
   if (jsonLdMatch) {
@@ -102,6 +133,7 @@ function parseRecipeFromHtml(html: string, url: string): ScrapedRecipe {
     }
   }
 
+  // Fallback: parse HTML directly
   const nameMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
   const name = nameMatch ? nameMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unnamed Recipe';
   
@@ -129,10 +161,11 @@ function parseRecipeFromHtml(html: string, url: string): ScrapedRecipe {
 
 export async function getFeaturedRecipes(): Promise<SearchResult[]> {
   try {
-    const response = await fetch('https://www.matprat.no/api/recipes/featured', {
+    // Get featured recipes from the main page
+    const response = await fetch('https://www.matprat.no/', {
       headers: {
-        'User-Agent': 'Handleliste App',
-        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html',
       },
     });
 
@@ -140,17 +173,25 @@ export async function getFeaturedRecipes(): Promise<SearchResult[]> {
       return [];
     }
 
-    const data = await response.json();
+    const html = await response.text();
+    const results: SearchResult[] = [];
     
-    if (Array.isArray(data)) {
-      return data.map((recipe: any) => ({
-        title: recipe.title || recipe.name,
-        url: recipe.url || `https://www.matprat.no${recipe.path}`,
-        imageUrl: recipe.image || recipe.imageUrl,
-      }));
+    // Extract recipe links from the homepage
+    const recipePattern = /<a[^>]+href="(\/oppskrifter\/[^"]+)"[^>]*>/gi;
+    
+    let match;
+    while ((match = recipePattern.exec(html)) !== null) {
+      const url = `https://www.matprat.no${match[1]}`;
+      if (!results.some(r => r.url === url)) {
+        results.push({
+          title: '', // Will be extracted when recipe is loaded
+          url,
+        });
+      }
+      if (results.length >= 10) break;
     }
 
-    return [];
+    return results;
   } catch (error) {
     console.error('Featured recipes error:', error);
     return [];
