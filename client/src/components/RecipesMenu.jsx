@@ -5,11 +5,10 @@ export default function RecipesMenu({ onAddIngredients }) {
   const [newRecipeName, setNewRecipeName] = useState("");
   const [newRecipeIngredients, setNewRecipeIngredients] = useState("");
   
-  // Matprat search
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  // Recipe URL import
+  const [recipeUrl, setRecipeUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [showUrlImport, setShowUrlImport] = useState(false);
 
   // Fetch recipes from database
   useEffect(() => {
@@ -78,44 +77,30 @@ export default function RecipesMenu({ onAddIngredients }) {
     }
   };
 
-  const searchMatprat = async () => {
-    if (!searchQuery.trim()) return;
+  const importFromUrl = async () => {
+    if (!recipeUrl.trim()) return;
     
-    setIsSearching(true);
+    setIsImporting(true);
     try {
-      const response = await fetch(`/api/matprat/search?q=${encodeURIComponent(searchQuery)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResults(data);
-      }
-    } catch (error) {
-      console.error("Error searching Matprat:", error);
-      alert("Kunne ikke søke i Matprat. Prøv igjen senere.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const importFromMatprat = async (url) => {
-    try {
-      const response = await fetch('/api/matprat/import', {
+      const response = await fetch('/api/recipes/import-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: recipeUrl }),
       });
 
       if (response.ok) {
         await fetchRecipes();
-        setShowSearch(false);
-        setSearchQuery("");
-        setSearchResults([]);
+        setRecipeUrl("");
         alert("Oppskrift importert!");
       } else {
-        alert("Kunne ikke importere oppskrift. Prøv igjen.");
+        const error = await response.json();
+        alert(error.message || "Kunne ikke importere oppskrift. Sjekk at URL-en er riktig.");
       }
     } catch (error) {
       console.error("Error importing recipe:", error);
       alert("Kunne ikke importere oppskrift. Prøv igjen.");
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -136,9 +121,9 @@ export default function RecipesMenu({ onAddIngredients }) {
     }
   };
 
-  const handleSearchKeyPress = (e) => {
+  const handleUrlKeyPress = (e) => {
     if (e.key === 'Enter') {
-      searchMatprat();
+      importFromUrl();
     }
   };
 
@@ -146,88 +131,55 @@ export default function RecipesMenu({ onAddIngredients }) {
     <section className="recipes-section">
       <h2>🍽️ Oppskrifter</h2>
 
-      {/* Matprat Search Toggle */}
+      {/* URL Import Toggle */}
       <div style={{ marginBottom: '1rem' }}>
         <button 
-          onClick={() => setShowSearch(!showSearch)}
+          onClick={() => setShowUrlImport(!showUrlImport)}
           className="recipe-button"
           style={{ marginBottom: '0.5rem' }}
         >
-          {showSearch ? '📝 Legg til manuelt' : '🔍 Søk på Matprat.no'}
+          {showUrlImport ? '📝 Legg til manuelt' : '🔗 Importer fra URL'}
         </button>
       </div>
 
-      {/* Matprat Search Section */}
-      {showSearch && (
-        <div className="matprat-search" style={{ 
+      {/* URL Import Section */}
+      {showUrlImport && (
+        <div className="url-import" style={{ 
           padding: '1rem', 
           backgroundColor: '#f0f8ff', 
           borderRadius: '8px',
           marginBottom: '1rem'
         }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>Hent oppskrifter fra Matprat.no</h3>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>Importer oppskrift fra URL</h3>
           <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: '#666' }}>
-            Klikk for å se populære oppskrifter fra Matprat
+            Støtter Matprat.no, godt.no, tine.no og flere norske oppskriftsider
           </p>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <input
+              type="url"
+              value={recipeUrl}
+              onChange={e => setRecipeUrl(e.target.value)}
+              onKeyPress={handleUrlKeyPress}
+              placeholder="https://www.matprat.no/oppskrifter/..."
+              className="recipe-input"
+              style={{ flex: 1 }}
+            />
             <button 
-              onClick={searchMatprat}
+              onClick={importFromUrl}
               className="recipe-button"
-              disabled={isSearching}
-              style={{ width: '100%' }}
+              disabled={isImporting || !recipeUrl.trim()}
             >
-              {isSearching ? 'Henter...' : 'Vis populære oppskrifter'}
+              {isImporting ? 'Importerer...' : 'Importer'}
             </button>
           </div>
-
-          {/* Search Results */}
-          {searchResults.length > 0 && (
-            <div className="search-results">
-              <h4 style={{ marginTop: 0 }}>Oppskrifter fra Matprat:</h4>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
-                {searchResults.map((result, idx) => (
-                  <li key={idx} style={{
-                    padding: '0.75rem',
-                    backgroundColor: 'white',
-                    marginBottom: '0.5rem',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <strong>{result.title}</strong>
-                      {result.imageUrl && (
-                        <img 
-                          src={result.imageUrl} 
-                          alt={result.title}
-                          style={{ 
-                            width: '60px', 
-                            height: '60px', 
-                            objectFit: 'cover',
-                            borderRadius: '4px',
-                            marginLeft: '0.5rem'
-                          }}
-                        />
-                      )}
-                    </div>
-                    <button
-                      onClick={() => importFromMatprat(result.url)}
-                      className="use-recipe-button"
-                      style={{ marginLeft: '1rem' }}
-                    >
-                      Importer
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#666' }}>
+            💡 Bla på Matprat, godt.no eller tine.no, kopier oppskriftens URL og lim inn her
+          </p>
         </div>
       )}
 
       {/* Manual Recipe Form */}
-      {!showSearch && (
+      {!showUrlImport && (
         <div className="recipe-form">
           <input
             value={newRecipeName}

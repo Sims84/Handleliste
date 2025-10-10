@@ -35,6 +35,8 @@ A Norwegian shopping list application with secure user authentication using Repl
 5. **Logout**: Clears session and redirects to landing page
 
 ## Recent Changes (Latest - October 10, 2025)
+- ✅ **Added URL-based recipe import** - Users can paste recipe URLs from Matprat.no, godt.no, tine.no
+- ✅ Simplified recipe integration - no search needed, just copy/paste URLs
 - ✅ Fixed Matprat.no recipe search to work without authentication
 - ✅ Updated scraper to fetch featured recipes (Matprat uses JavaScript for search)
 - ✅ Created recipes database table with proper ingredient storage

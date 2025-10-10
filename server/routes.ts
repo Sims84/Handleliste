@@ -72,6 +72,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import recipe from URL
+  app.post('/api/recipes/import-url', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = (req.user as any).claims.sub;
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ message: "URL er påkrevd" });
+      }
+
+      // Validate URL is from supported sites
+      const supportedSites = ['matprat.no', 'godt.no', 'tine.no'];
+      const urlObj = new URL(url);
+      const isSupported = supportedSites.some(site => urlObj.hostname.includes(site));
+      
+      if (!isSupported) {
+        return res.status(400).json({ 
+          message: `Kun disse sidene støttes: ${supportedSites.join(', ')}` 
+        });
+      }
+
+      const scrapedRecipe = await scrapeRecipe(url);
+      const recipe = await storage.createRecipe({
+        userId,
+        name: scrapedRecipe.name,
+        ingredients: scrapedRecipe.ingredients,
+        instructions: scrapedRecipe.instructions,
+        sourceUrl: scrapedRecipe.sourceUrl,
+        imageUrl: scrapedRecipe.imageUrl,
+      });
+      
+      res.status(201).json(recipe);
+    } catch (error) {
+      console.error("Error importing recipe from URL:", error);
+      res.status(500).json({ message: "Kunne ikke importere oppskrift. Sjekk at URL-en er riktig." });
+    }
+  });
+
   // Matprat integration routes
   app.get('/api/matprat/search', async (req, res) => {
     try {
