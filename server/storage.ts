@@ -5,8 +5,8 @@ import {
   type UpsertUser,
   type Recipe,
   type InsertRecipe,
-} from "../shared/schema";
-import { db } from "./db";
+} from "../shared/schema.js";
+import { db } from "./db.js";
 import { eq, and, desc } from "drizzle-orm";
 
 // Interface for storage operations
