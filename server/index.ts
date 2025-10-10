@@ -1,3 +1,12 @@
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+// Load .env file from root directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, "../.env") });
+
 import express from "express";
 import { registerRoutes } from "./routes";
 
