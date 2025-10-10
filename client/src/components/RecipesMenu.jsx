@@ -167,7 +167,7 @@ export default function RecipesMenu({ onAddIngredients }) {
         }}>
           <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>Hent oppskrifter fra Matprat.no</h3>
           <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: '#666' }}>
-            Viser populære oppskrifter fra Matprat
+            Klikk for å se populære oppskrifter fra Matprat
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
             <button 
@@ -176,14 +176,14 @@ export default function RecipesMenu({ onAddIngredients }) {
               disabled={isSearching}
               style={{ width: '100%' }}
             >
-              {isSearching ? 'Henter oppskrifter...' : 'Hent oppskrifter'}
+              {isSearching ? 'Henter...' : 'Vis populære oppskrifter'}
             </button>
           </div>
 
           {/* Search Results */}
           {searchResults.length > 0 && (
             <div className="search-results">
-              <h4 style={{ marginTop: 0 }}>Populære oppskrifter:</h4>
+              <h4 style={{ marginTop: 0 }}>Oppskrifter fra Matprat:</h4>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 {searchResults.map((result, idx) => (
                   <li key={idx} style={{

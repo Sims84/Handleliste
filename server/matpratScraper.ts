@@ -18,7 +18,7 @@ export interface SearchResult {
 
 export async function searchMatprat(query: string): Promise<SearchResult[]> {
   try {
-    // NOTE: Matprat.no search uses JavaScript to load results, so we get featured recipes instead
+    // NOTE: Both Matprat and godt.no use JavaScript, so we get featured recipes from Matprat
     const searchUrl = `https://www.matprat.no/oppskrifter/`;
     
     const response = await fetch(searchUrl, {
@@ -37,7 +37,6 @@ export async function searchMatprat(query: string): Promise<SearchResult[]> {
     const results: SearchResult[] = [];
     
     // Extract recipe links from the recipes page
-    // Pattern: <a ... href="/oppskrifter/.../"
     const recipePattern = /href="(\/oppskrifter\/[^"]+\/)"/gi;
     
     let match;
@@ -47,7 +46,6 @@ export async function searchMatprat(query: string): Promise<SearchResult[]> {
       const path = match[1];
       const url = `https://www.matprat.no${path}`;
       
-      // Avoid duplicates
       if (!seenUrls.has(url)) {
         seenUrls.add(url);
         
@@ -59,15 +57,11 @@ export async function searchMatprat(query: string): Promise<SearchResult[]> {
           url,
         });
         
-        // Limit to 15 results
         if (results.length >= 15) break;
       }
     }
 
-    console.log(`Matprat search: found ${results.length} recipes`);
-
-    // NOTE: Since Matprat uses JavaScript for search, we can't filter by query
-    // Just return all featured recipes
+    console.log(`Matprat: found ${results.length} featured recipes`);
     return results;
   } catch (error) {
     console.error('Matprat fetch error:', error);
