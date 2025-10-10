@@ -18,7 +18,8 @@ export interface SearchResult {
 
 export async function searchMatprat(query: string): Promise<SearchResult[]> {
   try {
-    const searchUrl = `https://www.matprat.no/sok/?q=${encodeURIComponent(query)}&category=recipes`;
+    // NOTE: Matprat.no search uses JavaScript to load results, so we get featured recipes instead
+    const searchUrl = `https://www.matprat.no/oppskrifter/`;
     
     const response = await fetch(searchUrl, {
       headers: {
@@ -28,52 +29,53 @@ export async function searchMatprat(query: string): Promise<SearchResult[]> {
     });
 
     if (!response.ok) {
-      console.error(`Search failed with status: ${response.status}`);
+      console.error(`Failed to fetch recipes: ${response.status}`);
       return [];
     }
 
     const html = await response.text();
     const results: SearchResult[] = [];
     
-    // Extract recipe links from the search results page
-    // Pattern: <a href="/oppskrifter/...">
-    const recipePattern = /<a[^>]+href="(\/oppskrifter\/[^"]+)"[^>]*>[\s\S]*?<h3[^>]*>([^<]+)<\/h3>[\s\S]*?(?:<img[^>]+src="([^"]+)"|)/gi;
+    // Extract recipe links from the recipes page
+    // Pattern: <a ... href="/oppskrifter/.../"
+    const recipePattern = /href="(\/oppskrifter\/[^"]+\/)"/gi;
     
     let match;
+    const seenUrls = new Set();
+    
     while ((match = recipePattern.exec(html)) !== null) {
-      const [, path, title, imageUrl] = match;
-      results.push({
-        title: title.trim(),
-        url: `https://www.matprat.no${path}`,
-        imageUrl: imageUrl || undefined,
-      });
+      const path = match[1];
+      const url = `https://www.matprat.no${path}`;
       
-      // Limit to 20 results
-      if (results.length >= 20) break;
+      // Avoid duplicates
+      if (!seenUrls.has(url)) {
+        seenUrls.add(url);
+        
+        // Extract title from the URL path
+        const titleFromPath = path.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Oppskrift';
+        
+        results.push({
+          title: titleFromPath.charAt(0).toUpperCase() + titleFromPath.slice(1),
+          url,
+        });
+        
+        // Limit to 15 results
+        if (results.length >= 15) break;
+      }
     }
 
-    // Fallback: simpler pattern if the above doesn't work
-    if (results.length === 0) {
-      const simplePattern = /href="(\/oppskrifter\/[^"]+)"/g;
-      const titles = html.match(/<h3[^>]*>([^<]+)<\/h3>/g) || [];
-      
-      let i = 0;
-      while ((match = simplePattern.exec(html)) !== null && i < titles.length) {
-        const titleMatch = titles[i].match(/<h3[^>]*>([^<]+)<\/h3>/);
-        if (titleMatch) {
-          results.push({
-            title: titleMatch[1].trim(),
-            url: `https://www.matprat.no${match[1]}`,
-          });
-        }
-        i++;
-        if (results.length >= 20) break;
-      }
+    // Filter results based on query if provided
+    if (query && query.trim()) {
+      const queryLower = query.toLowerCase().trim();
+      return results.filter(r => 
+        r.title.toLowerCase().includes(queryLower) ||
+        r.url.toLowerCase().includes(queryLower)
+      );
     }
 
     return results;
   } catch (error) {
-    console.error('Matprat search error:', error);
+    console.error('Matprat fetch error:', error);
     return [];
   }
 }

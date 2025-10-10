@@ -73,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Matprat integration routes
-  app.get('/api/matprat/search', isAuthenticated, async (req, res) => {
+  app.get('/api/matprat/search', async (req, res) => {
     try {
       const query = req.query.q as string;
       if (!query) {

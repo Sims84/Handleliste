@@ -34,7 +34,11 @@ A Norwegian shopping list application with secure user authentication using Repl
 4. **Home Page**: Shows personalized shopping list for authenticated users
 5. **Logout**: Clears session and redirects to landing page
 
-## Recent Changes (Latest)
+## Recent Changes (Latest - October 10, 2025)
+- ✅ Fixed Matprat.no recipe search to work without authentication
+- ✅ Updated scraper to fetch featured recipes (Matprat uses JavaScript for search)
+- ✅ Created recipes database table with proper ingredient storage
+- ✅ Fixed shopping list integration - ingredients now properly added from recipes
 - ✅ Added complete Replit Auth integration
 - ✅ Restructured project into client/server/shared architecture
 - ✅ Set up PostgreSQL database with user and session management
