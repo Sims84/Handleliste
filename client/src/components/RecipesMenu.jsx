@@ -165,30 +165,25 @@ export default function RecipesMenu({ onAddIngredients }) {
           borderRadius: '8px',
           marginBottom: '1rem'
         }}>
-          <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Søk etter oppskrifter</h3>
+          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>Hent oppskrifter fra Matprat.no</h3>
+          <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: '#666' }}>
+            Viser populære oppskrifter fra Matprat
+          </p>
           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyPress={handleSearchKeyPress}
-              placeholder="Søk etter oppskrifter..."
-              className="recipe-input"
-              style={{ flex: 1 }}
-            />
             <button 
               onClick={searchMatprat}
               className="recipe-button"
               disabled={isSearching}
+              style={{ width: '100%' }}
             >
-              {isSearching ? 'Søker...' : 'Søk'}
+              {isSearching ? 'Henter oppskrifter...' : 'Hent oppskrifter'}
             </button>
           </div>
 
           {/* Search Results */}
           {searchResults.length > 0 && (
             <div className="search-results">
-              <h4 style={{ marginTop: 0 }}>Søkeresultater:</h4>
+              <h4 style={{ marginTop: 0 }}>Populære oppskrifter:</h4>
               <ul style={{ listStyle: 'none', padding: 0 }}>
                 {searchResults.map((result, idx) => (
                   <li key={idx} style={{

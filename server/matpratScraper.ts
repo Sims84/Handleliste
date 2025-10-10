@@ -64,15 +64,10 @@ export async function searchMatprat(query: string): Promise<SearchResult[]> {
       }
     }
 
-    // Filter results based on query if provided
-    if (query && query.trim()) {
-      const queryLower = query.toLowerCase().trim();
-      return results.filter(r => 
-        r.title.toLowerCase().includes(queryLower) ||
-        r.url.toLowerCase().includes(queryLower)
-      );
-    }
+    console.log(`Matprat search: found ${results.length} recipes`);
 
+    // NOTE: Since Matprat uses JavaScript for search, we can't filter by query
+    // Just return all featured recipes
     return results;
   } catch (error) {
     console.error('Matprat fetch error:', error);
