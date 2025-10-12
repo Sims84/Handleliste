@@ -2,18 +2,43 @@ import React, { useState, useEffect } from "react";
 import RecipesMenu from "./RecipesMenu";
 import ShoppingList from "./ShoppingList";
 import { useAuth } from "../hooks/useAuth";
+import { 
+  parseIngredient, 
+  mergeIngredients, 
+  findMatchingItem,
+  ParsedIngredient 
+} from "../lib/ingredientParser";
 
 export default function Home() {
   const { user } = useAuth();
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<ParsedIngredient[]>([]);
   const [newItem, setNewItem] = useState("");
 
-  const addIngredientsToList = (ingredients) => {
-    const existing = new Set(items.map(i => i.name.toLowerCase()));
-    const toAdd = ingredients
-      .filter(ing => !existing.has(ing.toLowerCase()))
-      .map(ing => ({ name: ing, bought: false }));
-    if (toAdd.length) setItems(prev => [...prev, ...toAdd]);
+  const addIngredientsToList = (ingredients: string[]) => {
+    setItems(prev => {
+      let updated = [...prev];
+      
+      for (const ingredientStr of ingredients) {
+        const parsed = parseIngredient(ingredientStr);
+        const matchIndex = findMatchingItem(updated, parsed);
+        
+        if (matchIndex !== -1) {
+          // Try to merge with existing item
+          const merged = mergeIngredients(updated[matchIndex], parsed);
+          if (merged) {
+            updated[matchIndex] = merged;
+          } else {
+            // Can't merge (e.g., different units), add as new item
+            updated.push({ ...parsed, bought: false });
+          }
+        } else {
+          // New item, add it
+          updated.push({ ...parsed, bought: false });
+        }
+      }
+      
+      return updated;
+    });
   };
 
   // Load saved items from localStorage (could be moved to backend later)
@@ -33,7 +58,26 @@ export default function Home() {
 
   const addItem = () => {
     if (newItem.trim() === "") return;
-    setItems([...items, { name: newItem, bought: false }]);
+    
+    const parsed = parseIngredient(newItem);
+    const matchIndex = findMatchingItem(items, parsed);
+    
+    if (matchIndex !== -1) {
+      // Try to merge with existing item
+      const merged = mergeIngredients(items[matchIndex], parsed);
+      if (merged) {
+        const updated = [...items];
+        updated[matchIndex] = merged;
+        setItems(updated);
+      } else {
+        // Can't merge (e.g., different units), add as new item
+        setItems([...items, { ...parsed, bought: false }]);
+      }
+    } else {
+      // New item, add it
+      setItems([...items, { ...parsed, bought: false }]);
+    }
+    
     setNewItem("");
   };
 

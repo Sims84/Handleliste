@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIngredient } from "../lib/ingredientParser";
 
 export default function ShoppingList({ 
   items, 
@@ -38,7 +39,7 @@ export default function ShoppingList({
               onClick={() => toggleItem(i)}
               className={`shopping-item ${item.bought ? 'bought' : ''}`}
             >
-              <span className="item-name">{item.name}</span>
+              <span className="item-name">{formatIngredient(item)}</span>
               <span className="item-status">
                 {item.bought ? '✓' : '○'}
               </span>
